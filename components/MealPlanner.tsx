@@ -45,42 +45,50 @@ export default function MealPlanner() {
 
   const handleSuggest = async () => {
     setLoading(true)
-    console.log('Starting meal suggestion request...')
     try {
       const requestBody = { fridge, preferences, timeAvailable }
-      console.log('Request body:', requestBody)
       
-      const res = await fetch('/api/suggest-meal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      })
+      // Create AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 35000) // 35 second timeout
       
-      console.log('Response status:', res.status)
-      console.log('Response ok:', res.ok)
-      
-      if (!res.ok) {
-        const errorText = await res.text()
-        console.error('API Error Response:', errorText)
-        throw new Error(`API Error: ${res.status} - ${errorText}`)
-      }
-      
-      const data = await res.json()
-      console.log('Response data:', data)
-      
-      if (data.error) {
-        throw new Error(data.error)
-      }
-      
-      setSuggestion(data.suggestion)
-      
-      // Scroll to suggestion section after a short delay to ensure the content is rendered
-      setTimeout(() => {
-        suggestionRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+      try {
+        const res = await fetch('/api/suggest-meal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
         })
-      }, 100)
+        
+        clearTimeout(timeoutId)
+        
+        if (!res.ok) {
+          const errorText = await res.text()
+          throw new Error(`API Error: ${res.status} - ${errorText}`)
+        }
+        
+        const data = await res.json()
+        
+        if (data.error) {
+          throw new Error(data.error)
+        }
+        
+        setSuggestion(data.suggestion)
+        
+        // Scroll to suggestion section after a short delay to ensure the content is rendered
+        setTimeout(() => {
+          suggestionRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          })
+        }, 100)
+      } catch (fetchError) {
+        clearTimeout(timeoutId)
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Request timed out. Please try again.')
+        }
+        throw fetchError
+      }
     } catch (err) {
       console.error('Error in handleSuggest:', err)
       setSuggestion(`Could not fetch suggestion: ${err instanceof Error ? err.message : 'Unknown error'}`)
