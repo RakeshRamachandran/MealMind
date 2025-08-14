@@ -25,12 +25,13 @@ Please provide a detailed meal suggestion that includes:
 5  Make sure to suggest the meal based on the Dietary Preference
 6. Tips for best results
 7. Only suggest the meals with the available ingredients in the Fridge
+8. Try to give more than 1 meal suggestion
 
 Make sure the suggestion is practical, delicious, and fits within the time constraint. Be creative and encouraging!`
 
     console.log('Making request to OpenRouter with prompt:', prompt)
     
-    const apiKey = process.env.OPENROUTER_API_KEY || 'Your-Open-router-api-key'
+    const apiKey = process.env.OPENROUTER_API_KEY || 'Your OpenRouter API Key'
     
     if (!apiKey) {
       throw new Error('OPENROUTER_API_KEY environment variable is not set')
@@ -45,7 +46,7 @@ Make sure the suggestion is practical, delicious, and fits within the time const
         'X-Title': 'MealMind'
       },
       body: JSON.stringify({
-        model: 'openai/gpt-oss-20b:free',
+        model: 'mistralai/mistral-small-3.2-24b-instruct:free',
         messages: [
           { 
             role: 'system', 

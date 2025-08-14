@@ -6,6 +6,10 @@ import Navigation from './components/Navigation'
 export const metadata: Metadata = {
   title: 'MealMind - Smart Meal & Grocery Planner',
   description: 'AI-powered meal suggestions tailored to your ingredients and preferences',
+  icons: {
+    icon: '/icon.svg',
+  },
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({
